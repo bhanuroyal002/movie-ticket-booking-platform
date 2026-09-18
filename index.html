@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineBook - Movie Ticket Booking</title>
+  <style>
+    *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#0f172a;color:#e5e7eb}
+    header{background:#111827;padding:18px 6%;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid #374151}
+    .logo{font-size:24px;font-weight:700;color:#f59e0b}.hero{padding:48px 6%;background:linear-gradient(135deg,#1e293b,#111827)}
+    .hero h1{font-size:42px;margin:0 0 10px}.hero p{color:#cbd5e1;font-size:18px}.container{padding:30px 6%;max-width:1200px;margin:auto}
+    .movies{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}.card{background:#1f2937;border:1px solid #374151;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+    .poster{height:280px;background-size:cover;background-position:center}.content{padding:16px}.content h3{margin:0 0 8px}.meta{color:#9ca3af;font-size:14px;margin-bottom:14px}
+    button{border:0;border-radius:10px;padding:11px 16px;background:#f59e0b;color:#111827;font-weight:700;cursor:pointer}button:hover{background:#fbbf24}
+    .booking{display:none;margin-top:34px;background:#111827;border:1px solid #374151;border-radius:18px;padding:24px}.booking.active{display:block}
+    .row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}.show{background:#1f2937;color:#fff;border:1px solid #4b5563}.show.active{background:#2563eb;border-color:#2563eb}
+    .screen{margin:24px auto 18px;background:#d1d5db;color:#111827;text-align:center;border-radius:50% 50% 10px 10px;padding:10px;max-width:500px;font-weight:bold;letter-spacing:2px}
+    .seats{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;max-width:500px;margin:auto}.seat{aspect-ratio:1;border-radius:8px;background:#374151;border:1px solid #64748b;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer}.seat.selected{background:#22c55e;border-color:#22c55e;color:#062e16}.seat.occupied{background:#7f1d1d;border-color:#ef4444;cursor:not-allowed;color:#fecaca}
+    .summary{margin-top:24px;padding:16px;background:#1f2937;border-radius:12px}.summary strong{color:#f59e0b}.confirm{width:100%;margin-top:14px}.success{display:none;margin-top:16px;padding:14px;border-radius:10px;background:#14532d;color:#dcfce7}
+    footer{text-align:center;padding:30px;color:#94a3b8}.tag{display:inline-block;padding:4px 8px;border-radius:999px;background:#374151;color:#d1d5db;font-size:12px;margin-right:6px}
+    @media(max-width:600px){.hero h1{font-size:30px}.seats{gap:6px}.container{padding:22px 4%}}
+  </style>
+</head>
+<body>
+<header><div class="logo">🎬 CineBook</div><div>Book your favourite movie</div></header>
+<section class="hero"><h1>Movie Ticket Booking Platform</h1><p>Select a movie, choose your show time, reserve seats and confirm your booking instantly.</p></section>
+<main class="container">
+  <h2>Now Showing</h2>
+  <div class="movies" id="movies"></div>
+  <section class="booking" id="booking">
+    <h2 id="selectedTitle">Booking</h2>
+    <div class="row" id="showTimes"></div>
+    <div class="screen">SCREEN</div>
+    <div class="seats" id="seats"></div>
+    <div class="summary">
+      <div>Movie: <strong id="movieName">-</strong></div>
+      <div>Show: <strong id="showName">-</strong></div>
+      <div>Seats: <strong id="seatNames">None</strong></div>
+      <div>Total: <strong id="total">₹0</strong></div>
+      <button class="confirm" id="confirmBtn">Confirm Booking</button>
+      <div class="success" id="success"></div>
+    </div>
+  </section>
+</main>
+<footer>© 2026 CineBook • Demo movie booking frontend</footer>
+<script>
+const movies=[
+ {title:'Galactic Warriors',genre:'Sci-Fi • 2h 18m',img:'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=800&q=80'},
+ {title:'Midnight Mystery',genre:'Thriller • 2h 05m',img:'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80'},
+ {title:'Love in Chennai',genre:'Romance • 2h 12m',img:'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80'},
+ {title:'The Last Kingdom',genre:'Action • 2h 30m',img:'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=800&q=80'}
+];
+const shows=['10:00 AM','1:30 PM','4:45 PM','8:15 PM']; let selectedMovie=null,selectedShow=null; const selectedSeats=new Set(); const occupied=new Set(['A3','B6','C2','D7','F4','G8']);
+const moviesEl=document.getElementById('movies'); const booking=document.getElementById('booking'); const seatsEl=document.getElementById('seats'); const showTimes=document.getElementById('showTimes');
+movies.forEach((m,i)=>{const c=document.createElement('div');c.className='card';c.innerHTML=`<div class="poster" style="background-image:url('${m.img}')"></div><div class="content"><h3>${m.title}</h3><div class="meta">${m.genre}</div><span class="tag">U/A</span><span class="tag">Dolby</span><br><br><button onclick="selectMovie(${i})">Book Tickets</button></div>`;moviesEl.appendChild(c)});
+window.selectMovie=(i)=>{selectedMovie=movies[i];selectedShow=shows[0];selectedSeats.clear();document.getElementById('selectedTitle').textContent='Book Tickets - '+selectedMovie.title;document.getElementById('movieName').textContent=selectedMovie.title;renderShows();renderSeats();updateSummary();booking.classList.add('active');booking.scrollIntoView({behavior:'smooth'})};
+function renderShows(){showTimes.innerHTML='';shows.forEach(s=>{const b=document.createElement('button');b.className='show'+(s===selectedShow?' active':'');b.textContent=s;b.onclick=()=>{selectedShow=s;renderShows();updateSummary()};showTimes.appendChild(b)})}
+function renderSeats(){seatsEl.innerHTML='';'ABCDEFGH'.split('').forEach(r=>{for(let n=1;n<=8;n++){const id=r+n;const d=document.createElement('div');d.className='seat'+(occupied.has(id)?' occupied':'')+(selectedSeats.has(id)?' selected':'');d.textContent=id;if(!occupied.has(id))d.onclick=()=>{selectedSeats.has(id)?selectedSeats.delete(id):selectedSeats.add(id);renderSeats();updateSummary()};seatsEl.appendChild(d)}})}
+function updateSummary(){document.getElementById('showName').textContent=selectedShow||'-';const arr=[...selectedSeats];document.getElementById('seatNames').textContent=arr.length?arr.join(', '):'None';document.getElementById('total').textContent='₹'+(arr.length*180)}
+document.getElementById('confirmBtn').onclick=()=>{const msg=document.getElementById('success');if(!selectedMovie||selectedSeats.size===0){msg.style.display='block';msg.style.background='#7c2d12';msg.style.color='#ffedd5';msg.textContent='Please select at least one seat before confirming.';return}msg.style.display='block';msg.style.background='#14532d';msg.style.color='#dcfce7';msg.textContent=`Booking confirmed for ${selectedMovie.title} (${selectedShow}) • Seats: ${[...selectedSeats].join(', ')} • Total ₹${selectedSeats.size*180}`};
+</script>
+</body>
+</html>
